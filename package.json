@@ -5,7 +5,7 @@
   "main": "index.js",
   "type": "module",
   "scripts": {
-   "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js"
   },
   "keywords": [
     "backend",
@@ -14,6 +14,7 @@
   "author": "Hrishikesh S G",
   "license": "ISC",
   "devDependencies": {
-    "nodemon": "^3.1.9"
+    "nodemon": "^3.1.9",
+    "prettier": "^3.4.2"
   }
 }
