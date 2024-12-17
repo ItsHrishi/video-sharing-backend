@@ -1,5 +1,6 @@
 import { v2 as cloudinary } from "cloudinary";
 import fs from "fs";
+import { ApiError } from "./ApiErros";
 
 cloudinary.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
@@ -25,4 +26,23 @@ const uploadOnCloudinary = async (localFilePath) => {
   }
 };
 
-export { uploadOnCloudinary };
+const deleteOnCloudinary = async (fileUrl) => {
+  try {
+    const parts = fileUrl.split("/");
+    const publicIdWithExtension = parts[parts.length - 1]; // Get the last part of the URL
+    const publicId = publicIdWithExtension.split(".")[0]; // Remove the file extension
+
+    const result = await cloudinary.uploader.destroy(publicId);
+    if (result) {
+      console.log("Image deleted successfully");
+    }
+    // return result;
+  } catch (error) {
+    throw new ApiError(
+      500,
+      "Something went wrong while deleting the cloudinary image"
+    );
+  }
+};
+
+export { uploadOnCloudinary, deleteOnCloudinary };
