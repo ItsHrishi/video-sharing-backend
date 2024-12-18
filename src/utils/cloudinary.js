@@ -34,8 +34,8 @@ const deleteOnCloudinary = async (fileUrl) => {
       const publicId = publicIdWithExtension.split(".")[0]; // Remove the file extension
 
       const result = await cloudinary.uploader.destroy(publicId);
-      if (result) {
-        console.log("Image deleted successfully");
+      if (!result) {
+        console.log("Cloudinary image delete failed");
       }
     } else {
       return;
