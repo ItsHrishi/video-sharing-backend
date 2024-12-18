@@ -12,7 +12,7 @@ const generateAccessAndRefreshTokens = async (userId) => {
     const accessToken = user.generateAccessToken();
     const refreshToken = user.generateRefreshToken();
 
-    user.refreshtoken = refreshToken;
+    user.refreshToken = refreshToken;
     await user.save({ validateBeforeSave: false }); // done to avoid the validtaion as we just need to save the refreshToken
 
     return { accessToken, refreshToken };
@@ -132,9 +132,8 @@ const loginUser = asyncHandler(async (req, res) => {
     user._id
   );
 
-  const loggedInUser = await User.findById(user._id).select(
-    "-password -refreshToken"
-  );
+  const loggedInUser = await User.findById(user._id).select("-password");
+  console.log("loggedin user : ", loggedInUser);
 
   // options so that the cookie will only be sent by the server and modified by the server!!
   const options = {
@@ -163,7 +162,7 @@ const logoutUser = asyncHandler(async (req, res) => {
   User.findByIdAndUpdate(
     req.user._id,
     {
-      $set: { refreshToken: undefined },
+      $unset: { refreshToken: 1 },
     },
     {
       new: true,
@@ -202,6 +201,8 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       throw new ApiError(401, "Invalid refresh token");
     }
 
+    console.log("check refresh token :", incomingRefreshToken, user);
+
     if (incomingRefreshToken !== user?.refreshToken) {
       throw new ApiError(401, "Refresh Token is expired or used");
     }
@@ -211,7 +212,7 @@ const refreshAccessToken = asyncHandler(async (req, res) => {
       secure: true,
     };
 
-    const { accessToken, newRefreshToken } =
+    const { accessToken, refreshToken: newRefreshToken } =
       await generateAccessAndRefreshTokens(user._id);
 
     return res
@@ -347,7 +348,7 @@ const updateUserCoverImage = asyncHandler(async (req, res) => {
 });
 
 //we are getting any channels profile here
-const getUserChanelProfile = asyncHandler(async (req, res) => {
+const getUserChannelProfile = asyncHandler(async (req, res) => {
   const { userName } = req.params;
 
   if (!userName) {
@@ -416,14 +417,16 @@ const getUserChanelProfile = asyncHandler(async (req, res) => {
 
   return res
     .status(200)
-    .json(new ApiResponse(200, "User channel frtched successfullys"));
+    .json(
+      new ApiResponse(200, channel[0], "User channel fetched successfullys")
+    );
 });
 
 const getWatchHistory = asyncHandler(async (req, res) => {
   const user = await User.aggregate([
     {
       $match: {
-        _id: new mongoose.Schema.Types.ObjectId(req.user._id),
+        _id: new mongoose.Types.ObjectId(req.user._id),
       },
     },
     {
@@ -453,7 +456,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
           {
             $addFields: {
               owner: {
-                $first: "owner ",
+                $first: "$owner",
               },
             },
           },
@@ -465,8 +468,11 @@ const getWatchHistory = asyncHandler(async (req, res) => {
   return res
     .status(200)
     .json(
-      new ApiResponse(200, user[0].watchHistory),
-      "watched histry fetched succesfully "
+      new ApiResponse(
+        200,
+        user[0].watchHistory,
+        "watched histry fetched succesfully "
+      )
     );
 });
 
@@ -480,6 +486,6 @@ export {
   updateAccountdetais,
   updateUserAvatar,
   updateUserCoverImage,
-  getUserChanelProfile,
+  getUserChannelProfile,
   getWatchHistory,
 };
