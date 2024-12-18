@@ -66,8 +66,6 @@ const registerUser = asyncHandler(async (req, res) => {
   }
 
   if (!avatarLocalPath) {
-    //console.log("req.file : ", req.files);
-
     throw new ApiError(400, "Avatar is required!");
   }
 
@@ -104,8 +102,6 @@ const loginUser = asyncHandler(async (req, res) => {
   // get the data from body :
   const { email, userName, password } = req.body;
 
-  //   console.log(!userName, !email);
-
   if (!userName && !email) {
     throw new ApiError(400, "Username or email is required");
   }
@@ -114,15 +110,11 @@ const loginUser = asyncHandler(async (req, res) => {
     $or: [{ userName }, { email }],
   });
 
-  //   console.log("before error", userName, email, user);
-
   if (!user) {
     throw new ApiError(404, "User doesnot exist");
   }
-  //   console.log("after error", user);
 
   const isPasswordValid = await user.isPasswordCorrect(password);
-  //   console.log("debugging", user);
 
   if (!isPasswordValid) {
     throw new ApiError(401, "Invalid user credentials");
